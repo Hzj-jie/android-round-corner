@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.gemini.round_corner"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk android:minSdkVersion="1" />
+    <users-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <application android:icon="@drawable/blank">
+        <activity android:name=".RoundCorner"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:label="Round Corner"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name=".RoundCorner" />
+                <action android:name="android.intent.action.MAIN" /> 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
