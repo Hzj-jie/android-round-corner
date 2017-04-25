@@ -4,8 +4,8 @@
     android:versionCode="1"
     android:versionName="1.0">
 
-    <uses-sdk android:minSdkVersion="1" />
-    <users-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-sdk android:minSdkVersion="3" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <application android:icon="@drawable/blank">
         <activity android:name=".RoundCorner"
             android:theme="@android:style/Theme.NoDisplay"
@@ -20,5 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".RCService"
+                 android:label="RoundCorner Service" />
     </application>
 </manifest>
