@@ -34,11 +34,18 @@ public class RCView extends View {
     this.degrees = degrees;
     this.bitmap = loadImage();
     this.matrix = new Matrix();
-    this.matrix.postRotate(degrees, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+    final int center = Math.min(bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+    this.matrix.postRotate(degrees, center, center);
     this.matrix.postScale(scale(), scale());
-    // Log.w(TAG, "bitmap size " + bitmap.getWidth() + " x " + bitmap.getHeight());
-    this.width = (int)(bitmap.getWidth() * scale());
-    this.height = (int)(bitmap.getHeight() * scale());
+    int width = (int)(bitmap.getWidth() * scale());
+    int height = (int)(bitmap.getHeight() * scale());
+    if (degrees == 90 || degrees == 270) {
+      int temp = height;
+      height = width;
+      width = temp;
+    }
+    this.width = width;
+    this.height = height;
   }
 
   private Bitmap loadImage() {
@@ -47,10 +54,10 @@ public class RCView extends View {
       degrees + ".jpg",
       degrees + ".jpeg",
       degrees + ".bmp",
-      ".png",
-      ".jpg",
-      ".jpeg",
-      ".bmp",
+      "png",
+      "jpg",
+      "jpeg",
+      "bmp",
     };
     Bitmap bitmap = null;
     for (final String file : files) {
@@ -64,7 +71,8 @@ public class RCView extends View {
 
   private static Bitmap loadImage(final String type) {
     return BitmapFactory.decodeFile(
-        Environment.DIRECTORY_PICTURES + "/org.gemini.round_corner" + type);
+        Environment.getExternalStoragePublicDirectory(
+        Environment.DIRECTORY_PICTURES) + "/org.gemini.round_corner." + type);
   }
 
   public int width() {
