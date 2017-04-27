@@ -107,28 +107,28 @@ public class RCService extends Service {
   }
 
   @Override
-  public void onCreate() {
-    super.onCreate();
-    WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-    tl = bind(wm, 0);
-    tr = bind(wm, 90);
-    br = bind(wm, 180);
-    bl = bind(wm, 270);
-  }
-
-  @Override
   public void onDestroy() {
     super.onDestroy();
-    ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tl);
-    ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tr);
-    ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(br);
-    ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(bl);
+    if (tl != null) {
+      assert tr != null;
+      assert br != null;
+      assert bl != null;
+      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tl);
+      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tr);
+      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(br);
+      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(bl);
+    }
   }
 
   @Override
   public int onStartCommand(
       final Intent intent, final int flags, final int startId) {
     if (running.compareAndSet(0, 1)) {
+      WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+      tl = bind(wm, 0);
+      tr = bind(wm, 90);
+      br = bind(wm, 180);
+      bl = bind(wm, 270);
       return START_STICKY;
     } else {
       stopSelf(startId);

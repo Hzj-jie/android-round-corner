@@ -72,7 +72,7 @@ public class RCView extends View {
   private static Bitmap loadImage(final String type) {
     return BitmapFactory.decodeFile(
         Environment.getExternalStoragePublicDirectory(
-        Environment.DIRECTORY_PICTURES) + "/org.gemini.round_corner." + type);
+        Environment.DIRECTORY_PICTURES) + "/org.gemini.round_corner/" + type);
   }
 
   public int width() {
