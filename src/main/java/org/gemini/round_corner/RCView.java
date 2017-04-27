@@ -68,7 +68,7 @@ public class RCView extends View {
 
   private float scale() {
     // return Resources.getSystem().getDisplayMetrics().density;
-    return 1;
+    return 0.18f;
   }
 
   @Override
