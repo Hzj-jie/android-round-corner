@@ -42,13 +42,22 @@ public class RCView extends View {
   }
 
   private Bitmap loadImage() {
-    Bitmap bitmap = loadImage(degrees + ".png");
-    if (bitmap != null) {
-      return bitmap;
-    }
-    bitmap = loadImage(".png");
-    if (bitmap != null) {
-      return bitmap;
+    String[] files = {
+      degrees + ".png",
+      degrees + ".jpg",
+      degrees + ".jpeg",
+      degrees + ".bmp",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".bmp",
+    };
+    Bitmap bitmap = null;
+    for (final String file : files) {
+      bitmap = loadImage(file);
+      if (bitmap != null) {
+        return bitmap;
+      }
     }
     return BitmapFactory.decodeResource(getResources(), R.drawable.default_png);
   }
