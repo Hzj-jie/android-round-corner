@@ -68,10 +68,10 @@ public class RCView extends View {
       degrees + ".jpg",
       degrees + ".jpeg",
       degrees + ".bmp",
-      "png",
-      "jpg",
-      "jpeg",
-      "bmp",
+      "a.png",
+      "a.jpg",
+      "a.jpeg",
+      "a.bmp",
     };
     Bitmap bitmap = null;
     for (final String file : files) {
