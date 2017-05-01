@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 
 public class RoundCorner extends Activity {
-    @Override
-    protected void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        startService(new Intent(this, RCService.class));
-        finish();
-    }
+  @Override
+  protected void onCreate(Bundle bundle) {
+    super.onCreate(bundle);
+    startService(new Intent(this, RCService.class));
+    finish();
+  }
 }
