@@ -3,6 +3,7 @@ package org.gemini.round_corner;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -12,11 +13,21 @@ import android.view.WindowManager;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RCService extends Service {
-  private static final AtomicInteger running = new AtomicInteger();
+  private static RCService instance;
   private RCView tl;
   private RCView tr;
   private RCView br;
   private RCView bl;
+  private int width;
+  private int height;
+
+  public RCService() {
+    synchronized (RCService.class) {
+      if (instance == null) {
+        instance = this;
+      }
+    }
+  }
 
   @Override
   public IBinder onBind(final Intent intent) {
@@ -106,29 +117,77 @@ public class RCService extends Service {
     return v;
   }
 
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
+  private void unbind(final RCView view) {
+    try {
+      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(view);
+    } catch (Exception ex) {}
+  }
+
+  private synchronized boolean start() {
+    if (tl == null) {
+      assert tr != null;
+      assert br != null;
+      assert bl != null;
+      WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+      tl = bind(wm, 0);
+      tr = bind(wm, 90);
+      br = bind(wm, 180);
+      bl = bind(wm, 270);
+      width = screenWidth();
+      height = screenHeight();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private synchronized boolean stop() {
     if (tl != null) {
       assert tr != null;
       assert br != null;
       assert bl != null;
-      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tl);
-      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(tr);
-      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(br);
-      ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(bl);
+      unbind(tl);
+      unbind(tr);
+      unbind(br);
+      unbind(bl);
+      tl = null;
+      tr = null;
+      br = null;
+      bl = null;
+      width = 0;
+      height = 0;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public void onConfigurationChanged(final Configuration newConfig) {
+    if (instance == this) {
+      if (screenWidth() != width || screenHeight() != height) {
+        stop();
+        start();
+      }
+    }
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if (instance == this) {
+      stop();
     }
   }
 
   @Override
   public int onStartCommand(
       final Intent intent, final int flags, final int startId) {
-    if (running.compareAndSet(0, 1)) {
-      WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-      tl = bind(wm, 0);
-      tr = bind(wm, 90);
-      br = bind(wm, 180);
-      bl = bind(wm, 270);
+    if (instance != this) {
+      return instance.onStartCommand(intent, flags, startId);
+    }
+
+    if (start()) {
       return START_STICKY;
     } else {
       stopSelf(startId);
