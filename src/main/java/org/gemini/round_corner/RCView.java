@@ -15,11 +15,11 @@ public class RCView extends View {
   private static final String TAG = "RoundCornerView";
   private static final boolean DEBUGGING = false;
   private final Paint paint;
-  private final float degrees;
   private final Bitmap bitmap;
   private final Matrix matrix;
   private final int width;
   private final int height;
+  private final float scale;
 
   public RCView(final Context context, final float degrees) {
     super(context);
@@ -31,33 +31,47 @@ public class RCView extends View {
     } else {
       this.paint = null;
     }
-    this.degrees = degrees;
-    this.bitmap = loadImage();
-    this.matrix = new Matrix();
-    final int center = Math.min(bitmap.getWidth() / 2, bitmap.getHeight() / 2);
-    this.matrix.postRotate(degrees, center, center);
-    this.matrix.postScale(scale(), scale());
-    int width = (int)(bitmap.getWidth() * scale());
-    int height = (int)(bitmap.getHeight() * scale());
-    if (degrees == 90 || degrees == 270) {
-      int temp = height;
-      height = width;
-      width = temp;
+    {
+      Bitmap bitmap = null;
+      bitmap = loadImage(degrees);
+      if (bitmap == null) {
+        this.bitmap = BitmapFactory.decodeResource(
+            getResources(), R.drawable.default_png);
+        this.scale = 0.18f;
+      } else {
+        this.bitmap = bitmap;
+        this.scale = 1.0f; // Resources.getSystem().getDisplayMetrics().density;
+      }
     }
-    this.width = width;
-    this.height = height;
+    this.matrix = new Matrix();
+    {
+      final int center = Math.min(bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+      this.matrix.postRotate(degrees, center, center);
+      this.matrix.postScale(this.scale, this.scale);
+    }
+    {
+      int width = (int)(bitmap.getWidth() * this.scale);
+      int height = (int)(bitmap.getHeight() * this.scale);
+      if (degrees == 90 || degrees == 270) {
+        int temp = height;
+        height = width;
+        width = temp;
+      }
+      this.width = width;
+      this.height = height;
+    }
   }
 
-  private Bitmap loadImage() {
+  private static Bitmap loadImage(final float degrees) {
     String[] files = {
       degrees + ".png",
       degrees + ".jpg",
       degrees + ".jpeg",
       degrees + ".bmp",
-      "png",
-      "jpg",
-      "jpeg",
-      "bmp",
+      "a.png",
+      "a.jpg",
+      "a.jpeg",
+      "a.bmp",
     };
     Bitmap bitmap = null;
     for (final String file : files) {
@@ -66,7 +80,7 @@ public class RCView extends View {
         return bitmap;
       }
     }
-    return BitmapFactory.decodeResource(getResources(), R.drawable.default_png);
+    return null;
   }
 
   private static Bitmap loadImage(final String type) {
@@ -81,11 +95,6 @@ public class RCView extends View {
 
   public int height() {
     return height;
-  }
-
-  private float scale() {
-    // return Resources.getSystem().getDisplayMetrics().density;
-    return 1;
   }
 
   @Override
