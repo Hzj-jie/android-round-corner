@@ -177,9 +177,12 @@ public class RCService extends KeepAliveService {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    if (intent != null &&
-        (intent.getAction() == null ||
-         intent.getAction().length() == 0)) {
+    if (intent == null) {
+      return super.onStartCommand(intent, flags, startId);
+    }
+    Log.w("[Round-Corner]", "Receive command " + intent.getAction());
+    if (intent.getAction() == null ||
+        intent.getAction().length() == 0) {
       if (isStarted()) {
         Log.w("[Round-Corner]", "Going to stop Round-Corner.");
         stop();
@@ -192,5 +195,22 @@ public class RCService extends KeepAliveService {
       }
     }
     return super.onStartCommand(intent, flags, startId);
+  }
+
+  @Override
+  protected void firstStart() {
+    start();
+  }
+
+  @Override
+  public void onDestroy() {
+    stop();
+    super.onDestroy();
+  }
+
+  @Override
+  public void onTaskRemoved(Intent rootIntent) {
+    stop();
+    super.onTaskRemoved(rootIntent);
   }
 }
