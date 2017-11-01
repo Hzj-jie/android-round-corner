@@ -1,19 +1,17 @@
 package org.gemini.round_corner;
 
 import android.annotation.TargetApi;
-import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.os.IBinder;
 import android.view.Gravity;
 import android.view.WindowManager;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.gemini.shared.KeepAliveService;
 
-public class RCService extends Service {
-  private static RCService instance;
+public class RCService extends KeepAliveService {
   private RCView tl;
   private RCView tr;
   private RCView br;
@@ -21,20 +19,7 @@ public class RCService extends Service {
   private int width;
   private int height;
 
-  public RCService() {
-    synchronized (RCService.class) {
-      if (instance == null) {
-        instance = this;
-      }
-    }
-  }
-
-  @Override
-  public IBinder onBind(final Intent intent) {
-    return null;
-  }
-
-  private static int gravity(final float degree) {
+  private static int gravity(float degree) {
     return Gravity.TOP | Gravity.LEFT;
     /*
     switch ((int)degree) {
@@ -48,7 +33,7 @@ public class RCService extends Service {
     */
   }
 
-  private int x(final float degree, final int size) {
+  private int x(float degree, int size) {
     switch ((int)degree) {
       case 0: return 0;
       case 90: return screenWidth() - size;
@@ -59,7 +44,7 @@ public class RCService extends Service {
     return 0;
   }
 
-  private int y(final float degree, final int size) {
+  private int y(float degree, int size) {
     switch ((int)degree) {
       case 0: return 0;
       case 90: return 0;
@@ -78,9 +63,15 @@ public class RCService extends Service {
       Point size = new Point();
       wm.getDefaultDisplay().getRealSize(size);
       return size.x;
-    } catch (Exception ex) {
-      return wm.getDefaultDisplay().getWidth();
-    }
+    } catch (Exception ex) {}
+
+    try {
+      Point size = new Point();
+      wm.getDefaultDisplay().getSize(size);
+      return size.x;
+    } catch (Exception ex) {}
+
+    return wm.getDefaultDisplay().getWidth();
   }
 
   @SuppressWarnings( "deprecation" )
@@ -91,12 +82,18 @@ public class RCService extends Service {
       Point size = new Point();
       wm.getDefaultDisplay().getRealSize(size);
       return size.y;
-    } catch (Exception ex) {
-      return wm.getDefaultDisplay().getHeight();
-    }
+    } catch (Exception ex) {}
+
+    try {
+      Point size = new Point();
+      wm.getDefaultDisplay().getSize(size);
+      return size.y;
+    } catch (Exception ex) {}
+
+    return wm.getDefaultDisplay().getHeight();
   }
 
-  private RCView bind(final WindowManager wm, final float degree) {
+  private RCView bind(WindowManager wm, float degree) {
     RCView v = new RCView(this, degree);
     WindowManager.LayoutParams params = new WindowManager.LayoutParams(
         v.width(),
@@ -117,17 +114,27 @@ public class RCService extends Service {
     return v;
   }
 
-  private void unbind(final RCView view) {
+  private void unbind(RCView view) {
     try {
       ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(view);
     } catch (Exception ex) {}
   }
 
-  private synchronized boolean start() {
+  private boolean isStarted() {
     if (tl == null) {
-      assert tr != null;
-      assert br != null;
-      assert bl != null;
+      assert tr == null;
+      assert br == null;
+      assert bl == null;
+      return false;
+    }
+    assert tr != null;
+    assert br != null;
+    assert bl != null;
+    return true;
+  }
+
+  private boolean start() {
+    if (!isStarted()) {
       WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
       tl = bind(wm, 0);
       tr = bind(wm, 90);
@@ -141,11 +148,8 @@ public class RCService extends Service {
     }
   }
 
-  private synchronized boolean stop() {
-    if (tl != null) {
-      assert tr != null;
-      assert br != null;
-      assert bl != null;
+  private boolean stop() {
+    if (isStarted()) {
       unbind(tl);
       unbind(tr);
       unbind(br);
@@ -163,35 +167,27 @@ public class RCService extends Service {
   }
 
   @Override
-  public void onConfigurationChanged(final Configuration newConfig) {
-    if (instance == this) {
-      if (screenWidth() != width || screenHeight() != height) {
+  public void onConfigurationChanged(Configuration newConfig) {
+    if (isStarted() && (screenWidth() != width || screenHeight() != height)) {
+      stop();
+      start();
+    }
+  }
+
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent != null &&
+        intent.getAction() == null ||
+        intent.getAction().length() == 0) {
+      if (isStarted()) {
         stop();
+        stopStickies();
+        return discardCommand(startId);
+      } else {
         start();
+        return sticky(startId);
       }
     }
-  }
-
-  @Override
-  public void onDestroy() {
-    super.onDestroy();
-    if (instance == this) {
-      stop();
-    }
-  }
-
-  @Override
-  public int onStartCommand(
-      final Intent intent, final int flags, final int startId) {
-    if (instance != this) {
-      return instance.onStartCommand(intent, flags, startId);
-    }
-
-    if (start()) {
-      return START_STICKY;
-    } else {
-      stopSelf(startId);
-      return START_NOT_STICKY;
-    }
+    return super.onStartCommand(intent, flags, startId);
   }
 }
