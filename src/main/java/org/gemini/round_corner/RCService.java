@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -177,13 +178,15 @@ public class RCService extends KeepAliveService {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     if (intent != null &&
-        intent.getAction() == null ||
-        intent.getAction().length() == 0) {
+        (intent.getAction() == null ||
+         intent.getAction().length() == 0)) {
       if (isStarted()) {
+        Log.w("[Round-Corner]", "Going to stop Round-Corner.");
         stop();
         stopStickies();
         return discardCommand(startId);
       } else {
+        Log.w("[Round-Corner]", "Going to start Round-Corner.");
         start();
         return sticky(startId);
       }
