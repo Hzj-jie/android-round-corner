@@ -1,7 +1,6 @@
 package org.gemini.round_corner;
 
 import android.annotation.TargetApi;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
@@ -136,6 +135,7 @@ public class RCService extends KeepAliveService {
 
   private boolean start() {
     if (!isStarted()) {
+      Log.i("[Round-Corner]", "Going to start Round-Corner.");
       WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
       tl = bind(wm, 0);
       tr = bind(wm, 90);
@@ -151,6 +151,7 @@ public class RCService extends KeepAliveService {
 
   private boolean stop() {
     if (isStarted()) {
+      Log.i("[Round-Corner]", "Going to stop Round-Corner.");
       unbind(tl);
       unbind(tr);
       unbind(br);
@@ -176,41 +177,22 @@ public class RCService extends KeepAliveService {
   }
 
   @Override
-  public int onStartCommand(Intent intent, int flags, int startId) {
-    if (intent == null) {
-      return super.onStartCommand(intent, flags, startId);
-    }
-    Log.w("[Round-Corner]", "Receive command " + intent.getAction());
-    if (intent.getAction() == null ||
-        intent.getAction().length() == 0) {
+  protected void process(String action) {
+    if (action == null || action.length() == 0) {
+      // The action is from a user behavior, start or stop according to the
+      // current status.
       if (isStarted()) {
-        Log.w("[Round-Corner]", "Going to stop Round-Corner.");
         stop();
-        stopStickies();
-        return discardCommand(startId);
+        stopSticky();
       } else {
-        Log.w("[Round-Corner]", "Going to start Round-Corner.");
         start();
-        return sticky(startId);
       }
     }
-    return super.onStartCommand(intent, flags, startId);
   }
 
   @Override
-  protected void firstStart() {
+  protected void onStart() {
+    // This is a boot / restart command.
     start();
-  }
-
-  @Override
-  public void onDestroy() {
-    stop();
-    super.onDestroy();
-  }
-
-  @Override
-  public void onTaskRemoved(Intent rootIntent) {
-    stop();
-    super.onTaskRemoved(rootIntent);
   }
 }
