@@ -9,11 +9,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.gemini.shared.Debugging;
 import org.gemini.shared.KeepAliveService;
 
 public class RCService extends KeepAliveService {
   public static final String USER_ACTION =
       "org.gemini.round_corner.action.USER_ACTION";
+  private static final String TAG = Debugging.createTag("RoundCorner.Service");
   private RCView tl;
   private RCView tr;
   private RCView br;
@@ -137,7 +139,7 @@ public class RCService extends KeepAliveService {
 
   private boolean start() {
     if (!isStarted()) {
-      Log.i("[Round-Corner]", "Going to start Round-Corner.");
+      Log.i(TAG, "Start Round-Corner.");
       WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
       tl = bind(wm, 0);
       tr = bind(wm, 90);
@@ -153,7 +155,7 @@ public class RCService extends KeepAliveService {
 
   private boolean stop() {
     if (isStarted()) {
-      Log.i("[Round-Corner]", "Going to stop Round-Corner.");
+      Log.i(TAG, "Stop Round-Corner.");
       unbind(tl);
       unbind(tr);
       unbind(br);
