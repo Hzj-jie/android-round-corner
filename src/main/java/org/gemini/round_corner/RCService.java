@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.gemini.shared.KeepAliveService;
 
 public class RCService extends KeepAliveService {
+  public static final String USER_ACTION =
+      "org.gemini.round_corner.action.USER_ACTION";
   private RCView tl;
   private RCView tr;
   private RCView br;
@@ -178,7 +180,7 @@ public class RCService extends KeepAliveService {
 
   @Override
   protected void process(String action) {
-    if (action == null || action.length() == 0) {
+    if (USER_ACTION.equals(action)) {
       // The action is from a user behavior, start or stop according to the
       // current status.
       if (isStarted()) {
@@ -187,12 +189,9 @@ public class RCService extends KeepAliveService {
       } else {
         start();
       }
+    } else {
+      // This is a boot / restart command.
+      start();
     }
-  }
-
-  @Override
-  protected void onStart() {
-    // This is a boot / restart command.
-    start();
   }
 }
