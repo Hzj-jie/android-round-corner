@@ -1,0 +1,8 @@
+-- Privacy Policy of Round Corner and More (org.gemini.round_corner) --
+
+This application requires READ_EXTERNAL_STORAGE, RECEIVE_BOOT_COMPLETED and
+SYSTEM_ALERT_WINDOW permission to perform its designed functionality, display
+round corners (by default) or other user defined images (from storage) on top of
+other windows after the android system booted.
+
+This application does not collect or store or transfer any data for any purpose.
